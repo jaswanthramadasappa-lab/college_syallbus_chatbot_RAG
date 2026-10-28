@@ -50,6 +50,29 @@ The Gradio web interface will launch locally (e.g., `http://127.0.0.1:7860`).
 
 ---
 
+## 🌐 Deploy to Render
+
+### Option A: Using Render Blueprints (Recommended)
+1. Go to [Render Dashboard](https://dashboard.render.com).
+2. Click **New +** > **Blueprint**.
+3. Connect your GitHub repository (`college_syallbus_chatbot_RAG`).
+4. Under Environment Variables, enter your `GEMINI_API_KEY`.
+5. Click **Apply**. Render will automatically build and deploy using `render.yaml`.
+
+### Option B: Manual Web Service
+1. In Render Dashboard, click **New +** > **Web Service**.
+2. Connect your GitHub repository.
+3. Configure the following settings:
+   - **Runtime:** `Python 3`
+   - **Build Command:** `pip install --upgrade pip && pip install torch --index-url https://download.pytorch.org/whl/cpu && pip install -r requirements.txt`
+   - **Start Command:** `python app.py`
+4. Under **Environment Variables**, add:
+   - `GEMINI_API_KEY` = `<your-gemini-api-key>`
+   - `PYTHON_VERSION` = `3.11.9`
+5. Click **Deploy Web Service**.
+
+---
+
 ## 🔍 How it Works
 
 1. **Extraction & Ingestion:** Extracts text from each syllabus page using `PyMuPDF`.

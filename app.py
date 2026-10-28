@@ -423,4 +423,5 @@ if __name__ == "__main__":
     print("\n==============================================")
     print("   MITS COLLEGE SYLLABUS CHATBOT")
     print("==============================================\n")
-    demo.launch()
+    port = int(os.environ.get("PORT", 7860))
+    demo.launch(server_name="0.0.0.0", server_port=port)
