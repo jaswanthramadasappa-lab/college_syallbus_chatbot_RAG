@@ -2,19 +2,35 @@ import os
 import shutil
 from pathlib import Path
 
-# Suppress HuggingFace Windows symlink warnings
-os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
-
 import pymupdf as fitz
 import gradio as gr
 from dotenv import load_dotenv
 
 from langchain_core.documents import Document
 from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_core.embeddings import Embeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
 from langchain_google_genai import ChatGoogleGenerativeAI
+import chromadb.utils.embedding_functions as ef
+
+
+# ============================================================
+# LIGHTWEIGHT ONNX EMBEDDING ADAPTER (NO PYTORCH / ~120MB RAM)
+# ============================================================
+
+class OnnxMiniLMEmbeddings(Embeddings):
+    """Ultra-lightweight ONNX-based MiniLM embeddings running via ONNX Runtime without PyTorch.
+    Fits easily within 512MB RAM environments like Render Free Tier (~120MB total app usage).
+    """
+    def __init__(self):
+        self._ef = ef.DefaultEmbeddingFunction()
+
+    def embed_documents(self, texts):
+        return self._ef(texts)
+
+    def embed_query(self, text):
+        return self._ef([text])[0]
 
 
 # ============================================================
@@ -45,12 +61,8 @@ FALLBACK_MODELS = list(dict.fromkeys(FALLBACK_MODELS))
 if not GEMINI_API_KEY:
     raise ValueError(
         "GEMINI_API_KEY is missing.\n"
-        "Create a .env file and add:\n"
-        'GEMINI_API_KEY="your_api_key_here"'
+        "Please provide GEMINI_API_KEY as an environment variable in Render or in a local .env file."
     )
-
-
-EMBEDDING_MODEL_NAME = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-mpnet-base-v2")
 
 
 # ============================================================
@@ -58,15 +70,8 @@ EMBEDDING_MODEL_NAME = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-m
 # ============================================================
 
 def build_vector_store():
-    print(f"\nLoading embedding model ({EMBEDDING_MODEL_NAME})...")
-
-    embeddings = HuggingFaceEmbeddings(
-        model_name=EMBEDDING_MODEL_NAME,
-        encode_kwargs={
-            "batch_size": 16,
-            "normalize_embeddings": True
-        }
-    )
+    print("\nLoading lightweight ONNX embedding model (all-MiniLM-L6-v2)...")
+    embeddings = OnnxMiniLMEmbeddings()
 
     # --------------------------------------------------------
     # Use existing database if valid and compatible

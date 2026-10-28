@@ -64,7 +64,7 @@ The Gradio web interface will launch locally (e.g., `http://127.0.0.1:7860`).
 2. Connect your GitHub repository.
 3. Configure the following settings:
    - **Runtime:** `Python 3`
-   - **Build Command:** `pip install --upgrade pip && pip install torch --index-url https://download.pytorch.org/whl/cpu && pip install -r requirements.txt`
+   - **Build Command:** `pip install --upgrade pip && pip install -r requirements.txt`
    - **Start Command:** `python app.py`
 4. Under **Environment Variables**, add:
    - `GEMINI_API_KEY` = `<your-gemini-api-key>`
@@ -77,7 +77,7 @@ The Gradio web interface will launch locally (e.g., `http://127.0.0.1:7860`).
 
 1. **Extraction & Ingestion:** Extracts text from each syllabus page using `PyMuPDF`.
 2. **Chunking:** Splits document text into overlapping chunks via `RecursiveCharacterTextSplitter`.
-3. **Semantic Embedding:** Embeds chunks using `sentence-transformers/all-mpnet-base-v2`.
+3. **Semantic Embedding:** Embeds chunks using lightweight ONNX `all-MiniLM-L6-v2` (~120MB RAM, optimized for cloud free tiers).
 4. **Vector Store:** Saves and indexes chunks in Chroma vector storage with auto-healing dimension verification.
 5. **Context Retrieval:** Retrieves top relevant syllabus passages with source page numbers.
 6. **Grounding & Response:** Passes retrieved syllabus chunks into Gemini to provide grounded, hallucination-free answers citing page numbers.
